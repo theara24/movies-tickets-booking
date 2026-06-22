@@ -1,0 +1,12 @@
+export { default as client } from "./api/client"
+
+export * from "./api/movie.service"
+export * from "./api/showtime.service"
+export * from "./api/booking.service"
+export * from "./api/payment.service"
+export * from "./api/auth.service"
+export * from "./api/promotion.service"
+export * from "./api/food.service"
+export * from "./api/customer.service"
+export * from "./api/dashboard.service"
+export * from "./api/report.service"
