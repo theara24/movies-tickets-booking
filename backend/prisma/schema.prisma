@@ -1,0 +1,505 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  CINEMA_MANAGER
+  CASHIER
+  GATE_STAFF
+  HR_OFFICER
+  ACCOUNTANT
+  CUSTOMER
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  KHQR
+  ABA
+  WING
+}
+
+enum SeatType {
+  STANDARD
+  VIP
+  COUPLE
+  WHEELCHAIR
+}
+
+enum SeatStatus {
+  AVAILABLE
+  LOCKED
+  BOOKED
+  MAINTENANCE
+}
+
+enum ShowtimeStatus {
+  SCHEDULED
+  ACTIVE
+  FINISHED
+  CANCELLED
+}
+
+enum MovieStatus {
+  NOW_SHOWING
+  COMING_SOON
+  ARCHIVED
+}
+
+enum TicketStatus {
+  ACTIVE
+  USED
+  EXPIRED
+  REFUNDED
+}
+
+enum PromotionType {
+  PERCENTAGE
+  FIXED
+  MEMBERSHIP
+  STUDENT
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum AuditAction {
+  LOGIN
+  LOGOUT
+  CREATE
+  UPDATE
+  DELETE
+  REFUND
+  ROLE_CHANGE
+}
+
+enum NotificationType {
+  BOOKING_CONFIRMATION
+  PAYMENT_RECEIVED
+  TICKET_READY
+  PROMOTION
+  REMINDER
+  SYSTEM
+}
+
+enum FoodCategory {
+  POPCORN
+  DRINKS
+  CANDY
+  COMBO
+  HOT_FOOD
+  OTHER
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  phone         String?
+  password      String
+  fullName      String
+  avatar        String?
+  isActive      Boolean   @default(true)
+  isLocked      Boolean   @default(false)
+  failedAttempts Int      @default(0)
+  lockUntil     DateTime?
+  lastLoginAt   DateTime?
+  role          UserRole  @default(CUSTOMER)
+  refreshToken  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  customer      Customer?
+  staff         Staff?
+  bookings      Booking[]
+  notifications Notification[]
+  auditLogs     AuditLog[]
+  payments      Payment[]
+
+  @@map("users")
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dob       DateTime?
+  gender    Gender?
+  points    Int      @default(0)
+  tier      String   @default("REGULAR")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders   FoodOrder[]
+
+  @@map("customers")
+}
+
+model Staff {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  employeeId  String   @unique
+  position    String
+  salary      Decimal  @default(0)
+  hireDate    DateTime @default(now())
+  cinemaId    String?
+  cinema      Cinema?  @relation(fields: [cinemaId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("staff")
+}
+
+model Movie {
+  id            String      @id @default(cuid())
+  title         String
+  description   String      @db.Text
+  duration      Int
+  language      String
+  rating        String
+  posterUrl     String?
+  trailerUrl    String?
+  releaseDate   DateTime
+  endDate       DateTime?
+  status        MovieStatus @default(COMING_SOON)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  genres        MovieGenre[]
+  showtimes     Showtime[]
+
+  @@map("movies")
+}
+
+model Genre {
+  id        String      @id @default(cuid())
+  name      String      @unique
+  slug      String      @unique
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  movies    MovieGenre[]
+
+  @@map("genres")
+}
+
+model MovieGenre {
+  movieId String
+  movie   Movie  @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  genreId String
+  genre   Genre  @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  @@id([movieId, genreId])
+  @@map("movie_genres")
+}
+
+model Cinema {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  address     String
+  city        String
+  phone       String?
+  email       String?
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  halls       Hall[]
+  staff       Staff[]
+  showtimes   Showtime[]
+
+  @@map("cinemas")
+}
+
+model Hall {
+  id          String   @id @default(cuid())
+  name        String
+  cinemaId    String
+  cinema      Cinema   @relation(fields: [cinemaId], references: [id], onDelete: Cascade)
+  capacity    Int
+  rows        Int
+  columns     Int
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  seats       Seat[]
+  showtimes   Showtime[]
+
+  @@map("halls")
+}
+
+model Seat {
+  id        String    @id @default(cuid())
+  hallId    String
+  hall      Hall      @relation(fields: [hallId], references: [id], onDelete: Cascade)
+  row       String
+  column    String
+  number    Int
+  type      SeatType  @default(STANDARD)
+  status    SeatStatus @default(AVAILABLE)
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  bookingSeats BookingSeat[]
+  locks        SeatLock[]
+
+  @@unique([hallId, row, column])
+  @@map("seats")
+}
+
+model Showtime {
+  id            String         @id @default(cuid())
+  movieId       String
+  movie         Movie          @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  cinemaId      String
+  cinema        Cinema         @relation(fields: [cinemaId], references: [id], onDelete: Cascade)
+  hallId        String
+  hall          Hall           @relation(fields: [hallId], references: [id], onDelete: Cascade)
+  startTime     DateTime
+  endTime       DateTime
+  bufferMinutes Int            @default(15)
+  price         Decimal
+  status        ShowtimeStatus @default(SCHEDULED)
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  bookings      Booking[]
+  seatLocks     SeatLock[]
+
+  @@unique([hallId, startTime])
+  @@index([movieId])
+  @@index([cinemaId])
+  @@index([startTime])
+  @@map("showtimes")
+}
+
+model Booking {
+  id              String        @id @default(cuid())
+  bookingRef      String        @unique
+  userId          String
+  user            User          @relation(fields: [userId], references: [id])
+  showtimeId      String
+  showtime        Showtime      @relation(fields: [showtimeId], references: [id])
+  promotionId     String?
+  promotion       Promotion?    @relation(fields: [promotionId], references: [id])
+  totalAmount     Decimal
+  discountAmount  Decimal        @default(0)
+  finalAmount     Decimal
+  status          BookingStatus @default(PENDING)
+  paidAt          DateTime?
+  cancelledAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  bookingSeats    BookingSeat[]
+  payment         Payment?
+  ticket          Ticket?
+  foodOrder       FoodOrder?
+
+  @@index([userId])
+  @@index([showtimeId])
+  @@index([bookingRef])
+  @@map("bookings")
+}
+
+model BookingSeat {
+  id        String   @id @default(cuid())
+  bookingId String
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  seatId    String
+  seat      Seat     @relation(fields: [seatId], references: [id])
+  price     Decimal
+  createdAt DateTime @default(now())
+
+  @@unique([bookingId, seatId])
+  @@index([seatId])
+  @@map("booking_seats")
+}
+
+model SeatLock {
+  id          String    @id @default(cuid())
+  seatId      String
+  seat        Seat      @relation(fields: [seatId], references: [id], onDelete: Cascade)
+  showtimeId  String
+  showtime    Showtime  @relation(fields: [showtimeId], references: [id], onDelete: Cascade)
+  userId      String
+  expiresAt   DateTime
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+
+  @@index([seatId, showtimeId])
+  @@index([expiresAt])
+  @@map("seat_locks")
+}
+
+model Payment {
+  id              String        @id @default(cuid())
+  bookingId       String        @unique
+  booking         Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User          @relation(fields: [userId], references: [id])
+  amount          Decimal
+  paymentMethod   PaymentMethod
+  paymentRef      String        @unique
+  transactionId   String?
+  status          PaymentStatus @default(PENDING)
+  paidAt          DateTime?
+  receiptUrl      String?
+  metadata        Json?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([paymentRef])
+  @@index([bookingId])
+  @@map("payments")
+}
+
+model Ticket {
+  id          String       @id @default(cuid())
+  ticketRef   String       @unique
+  bookingId   String       @unique
+  booking     Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  qrCode      String       @unique
+  qrData      String       @db.Text
+  status      TicketStatus @default(ACTIVE)
+  usedAt      DateTime?
+  scannedBy   String?
+  expiresAt   DateTime
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([ticketRef])
+  @@index([qrCode])
+  @@map("tickets")
+}
+
+model Promotion {
+  id             String         @id @default(cuid())
+  code           String         @unique
+  description    String?
+  type           PromotionType
+  value          Decimal
+  minAmount      Decimal?
+  maxDiscount    Decimal?
+  usageLimit     Int?
+  usedCount      Int            @default(0)
+  isActive       Boolean        @default(true)
+  startsAt       DateTime
+  expiresAt      DateTime
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  bookings       Booking[]
+
+  @@index([code])
+  @@map("promotions")
+}
+
+model FoodItem {
+  id          String       @id @default(cuid())
+  name        String
+  description String?      @db.Text
+  price       Decimal
+  category    FoodCategory @default(OTHER)
+  imageUrl    String?
+  stock       Int          @default(0)
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  orderItems  FoodOrderItem[]
+
+  @@map("food_items")
+}
+
+model FoodOrder {
+  id            String   @id @default(cuid())
+  orderRef      String   @unique
+  bookingId     String   @unique
+  booking       Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  customerId    String?
+  customer      Customer? @relation(fields: [customerId], references: [id])
+  totalAmount   Decimal
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  items         FoodOrderItem[]
+
+  @@index([orderRef])
+  @@map("food_orders")
+}
+
+model FoodOrderItem {
+  id          String    @id @default(cuid())
+  orderId     String
+  order       FoodOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  foodItemId  String
+  foodItem    FoodItem  @relation(fields: [foodItemId], references: [id])
+  quantity    Int
+  unitPrice   Decimal
+  createdAt   DateTime  @default(now())
+
+  @@map("food_order_items")
+}
+
+model Notification {
+  id      String           @id @default(cuid())
+  userId  String
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type    NotificationType
+  title   String
+  message String           @db.Text
+  isRead  Boolean          @default(false)
+  data    Json?
+  createdAt DateTime       @default(now())
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id        String      @id @default(cuid())
+  userId    String?
+  user      User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    AuditAction
+  entity    String
+  entityId  String?
+  oldValue  Json?
+  newValue  Json?
+  ip        String?
+  userAgent String?
+  createdAt DateTime    @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([entity])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
