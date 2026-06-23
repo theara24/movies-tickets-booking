@@ -44,7 +44,10 @@ let FoodService = class FoodService {
         const item = await this.prisma.foodItem.findUnique({ where: { id } });
         if (!item)
             throw new common_1.NotFoundException('Food item not found');
-        await this.prisma.foodItem.update({ where: { id }, data: { isActive: false } });
+        await this.prisma.foodItem.update({
+            where: { id },
+            data: { isActive: false },
+        });
         return { message: 'Food item deactivated' };
     }
     async createOrder(userId, dto) {
@@ -117,12 +120,17 @@ let FoodService = class FoodService {
         return order;
     }
     async findOrdersByUser(userId) {
-        const customer = await this.prisma.customer.findUnique({ where: { userId } });
+        const customer = await this.prisma.customer.findUnique({
+            where: { userId },
+        });
         if (!customer)
             return [];
         return this.prisma.foodOrder.findMany({
             where: { customerId: customer.id },
-            include: { items: { include: { foodItem: true } }, booking: { select: { bookingRef: true } } },
+            include: {
+                items: { include: { foodItem: true } },
+                booking: { select: { bookingRef: true } },
+            },
             orderBy: { createdAt: 'desc' },
         });
     }
@@ -132,12 +140,18 @@ let FoodService = class FoodService {
             this.prisma.foodOrder.findMany({
                 skip,
                 take: limit,
-                include: { items: { include: { foodItem: true } }, booking: { select: { bookingRef: true } } },
+                include: {
+                    items: { include: { foodItem: true } },
+                    booking: { select: { bookingRef: true } },
+                },
                 orderBy: { createdAt: 'desc' },
             }),
             this.prisma.foodOrder.count(),
         ]);
-        return { data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } };
+        return {
+            data,
+            pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        };
     }
 };
 exports.FoodService = FoodService;

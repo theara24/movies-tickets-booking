@@ -43,9 +43,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('jwt-refresh'))
   @ApiOperation({ summary: 'Refresh access token' })
-  refreshTokens(
-    @CurrentUser() user: any,
-  ) {
+  refreshTokens(@CurrentUser() user: any) {
     return this.authService.refreshTokens(user.sub, user.refreshToken);
   }
 

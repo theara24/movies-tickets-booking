@@ -1,6 +1,11 @@
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { AuditLogsService } from './audit-logs.service';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RbacGuard } from '../../common/guards/rbac.guard';

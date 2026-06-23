@@ -1,8 +1,21 @@
 import {
-  Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards,
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { MoviesService } from './movies.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
@@ -31,22 +44,36 @@ export class MoviesController {
   @ApiOperation({ summary: 'Get all movies' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
-  findAll(@Query() query: MovieQueryDto, @Query('page') page?: string, @Query('limit') limit?: string) {
-    return this.moviesService.findAll(query, page ? parseInt(page, 10) : 1, limit ? parseInt(limit, 10) : 10);
+  findAll(
+    @Query() query: MovieQueryDto,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.moviesService.findAll(
+      query,
+      page ? parseInt(page, 10) : 1,
+      limit ? parseInt(limit, 10) : 10,
+    );
   }
 
   @Public()
   @Get('now-showing')
   @ApiOperation({ summary: 'Get now showing movies' })
   getNowShowing(@Query('page') page?: string, @Query('limit') limit?: string) {
-    return this.moviesService.getNowShowing(page ? parseInt(page, 10) : 1, limit ? parseInt(limit, 10) : 20);
+    return this.moviesService.getNowShowing(
+      page ? parseInt(page, 10) : 1,
+      limit ? parseInt(limit, 10) : 20,
+    );
   }
 
   @Public()
   @Get('coming-soon')
   @ApiOperation({ summary: 'Get coming soon movies' })
   getComingSoon(@Query('page') page?: string, @Query('limit') limit?: string) {
-    return this.moviesService.getComingSoon(page ? parseInt(page, 10) : 1, limit ? parseInt(limit, 10) : 20);
+    return this.moviesService.getComingSoon(
+      page ? parseInt(page, 10) : 1,
+      limit ? parseInt(limit, 10) : 20,
+    );
   }
 
   @Public()

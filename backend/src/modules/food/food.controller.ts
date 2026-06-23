@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { FoodService } from './food.service';
@@ -61,7 +71,10 @@ export class FoodController {
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a food order' })
-  createOrder(@CurrentUser('id') userId: string, @Body() dto: CreateFoodOrderDto) {
+  createOrder(
+    @CurrentUser('id') userId: string,
+    @Body() dto: CreateFoodOrderDto,
+  ) {
     return this.foodService.createOrder(userId, dto);
   }
 

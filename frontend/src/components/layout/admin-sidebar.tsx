@@ -3,65 +3,12 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import {
-  LayoutDashboard,
-  Film,
-  Building2,
-  CalendarClock,
-  TicketCheck,
-  Users,
-  CreditCard,
-  Percent,
-  Pizza,
-  Briefcase,
-  BarChart3,
-  Shield,
-  Settings,
-  ChevronLeft,
-  ChevronRight,
-  LogOut,
-} from "lucide-react"
+import { ChevronLeft, ChevronRight, ChevronDown, LogOut } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
-
-interface NavItem {
-  label: string
-  href: string
-  icon: React.ElementType
-}
-
-const navSections: { title?: string; items: NavItem[] }[] = [
-  {
-    items: [{ label: "Dashboard", href: "/admin", icon: LayoutDashboard }],
-  },
-  {
-    title: "Management",
-    items: [
-      { label: "Movie Management", href: "/admin/movies", icon: Film },
-      { label: "Cinema Management", href: "/admin/cinemas", icon: Building2 },
-      { label: "Showtime Management", href: "/admin/showtimes", icon: CalendarClock },
-      { label: "Booking Management", href: "/admin/bookings", icon: TicketCheck },
-      { label: "Customer Management", href: "/admin/customers", icon: Users },
-      { label: "Payment Management", href: "/admin/payments", icon: CreditCard },
-      { label: "Promotion Management", href: "/admin/promotions", icon: Percent },
-      { label: "Food & Beverage", href: "/admin/food", icon: Pizza },
-      { label: "Staff Management", href: "/admin/staff", icon: Briefcase },
-    ],
-  },
-  {
-    title: "Analytics",
-    items: [{ label: "Reports", href: "/admin/reports", icon: BarChart3 }],
-  },
-  {
-    title: "Administration",
-    items: [
-      { label: "User Management", href: "/admin/users", icon: Shield },
-      { label: "Settings", href: "/admin/settings", icon: Settings },
-    ],
-  },
-]
+import { adminNav } from "@/lib/admin-nav"
 
 interface AdminSidebarProps {
   collapsed: boolean
@@ -70,10 +17,21 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
   const pathname = usePathname()
+  const [expandedMenus, setExpandedMenus] = useState<string[]>([])
+
+  const toggleMenu = (href: string) => {
+    setExpandedMenus((prev) =>
+      prev.includes(href) ? prev.filter((h) => h !== href) : [...prev, href],
+    )
+  }
 
   const isActive = (href: string) => {
     if (href === "/admin") return pathname === "/admin"
     return pathname.startsWith(href)
+  }
+
+  const isExpanded = (href: string) => {
+    return expandedMenus.includes(href) || isActive(href)
   }
 
   return (
@@ -106,7 +64,7 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
 
       <ScrollArea className="flex-1 py-2">
         <nav className="px-2 space-y-4">
-          {navSections.map((section, i) => (
+          {adminNav.map((section, i) => (
             <div key={i}>
               {section.title && !collapsed && (
                 <p className="px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
@@ -116,22 +74,78 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
               <ul className="space-y-0.5">
                 {section.items.map((item) => {
                   const active = isActive(item.href)
+                  const hasChildren = item.children && item.children.length > 0
+                  const expanded = isExpanded(item.href)
+
                   return (
                     <li key={item.href}>
-                      <Link
-                        href={item.href}
-                        className={cn(
-                          "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                          active
-                            ? "bg-gold/10 text-gold"
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
-                          collapsed && "justify-center px-2",
-                        )}
-                        title={collapsed ? item.label : undefined}
-                      >
-                        <item.icon className={cn("h-5 w-5 shrink-0", active && "text-gold")} />
-                        {!collapsed && <span className="truncate">{item.label}</span>}
-                      </Link>
+                      {hasChildren ? (
+                        <>
+                          <button
+                            onClick={() => toggleMenu(item.href)}
+                            className={cn(
+                              "flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                              active
+                                ? "bg-gold/10 text-gold"
+                                : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                              collapsed && "justify-center px-2",
+                            )}
+                            title={collapsed ? item.label : undefined}
+                          >
+                            <item.icon className={cn("h-5 w-5 shrink-0", active && "text-gold")} />
+                            {!collapsed && (
+                              <>
+                                <span className="truncate flex-1 text-left">{item.label}</span>
+                                <ChevronDown
+                                  className={cn(
+                                    "h-4 w-4 shrink-0 transition-transform",
+                                    expanded && "rotate-180",
+                                  )}
+                                />
+                              </>
+                            )}
+                          </button>
+                          {!collapsed && expanded && item.children && (
+                            <ul className="mt-0.5 ml-8 space-y-0.5">
+                              {item.children.map((child) => {
+                                const childActive = isActive(child.href)
+                                return (
+                                  <li key={child.href}>
+                                    <Link
+                                      href={child.href}
+                                      className={cn(
+                                        "flex items-center gap-3 px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
+                                        childActive
+                                          ? "bg-gold/10 text-gold"
+                                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                                      )}
+                                    >
+                                      <span className="truncate">{child.label}</span>
+                                    </Link>
+                                  </li>
+                                )
+                              })}
+                            </ul>
+                          )}
+                        </>
+                      ) : (
+                        <Link
+                          href={item.href}
+                          className={cn(
+                            "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                            active
+                              ? "bg-gold/10 text-gold"
+                              : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                            collapsed && "justify-center px-2",
+                          )}
+                          title={collapsed ? item.label : undefined}
+                        >
+                          <item.icon className={cn("h-5 w-5 shrink-0", active && "text-gold")} />
+                          {!collapsed && (
+                            <span className="truncate">{item.label}</span>
+                          )}
+                        </Link>
+                      )}
                     </li>
                   )
                 })}

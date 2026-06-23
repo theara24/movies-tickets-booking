@@ -39,9 +39,8 @@ export default function AdminPaymentsPage() {
     queryFn: () => getTransactions({ status: statusFilter !== "all" ? statusFilter : undefined, page, limit: 10 }),
   })
 
-  const result = data?.data
-  const payments = result?.payments ?? []
-  const totalPages = result?.totalPages ?? 1
+  const payments = data?.data ?? []
+  const totalPages = 1
 
   return (
     <div className="space-y-6">

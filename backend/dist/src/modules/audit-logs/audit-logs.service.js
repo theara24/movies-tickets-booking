@@ -40,7 +40,9 @@ let AuditLogsService = class AuditLogsService {
                 where,
                 skip,
                 take: limit,
-                include: { user: { select: { id: true, fullName: true, email: true } } },
+                include: {
+                    user: { select: { id: true, fullName: true, email: true } },
+                },
                 orderBy: { createdAt: 'desc' },
             }),
             this.prisma.auditLog.count({ where }),

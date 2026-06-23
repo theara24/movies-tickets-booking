@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { Bell, Search, ChevronDown, Menu, LogOut, User, Settings, Shield } from "lucide-react"
+import Link from "next/link"
+import { Bell, Search, ChevronDown, Menu, LogOut, User, Settings, Shield, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -15,27 +16,60 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
+interface Breadcrumb {
+  label: string
+  href: string
+}
+
 interface AdminHeaderProps {
   title: string
+  breadcrumbs?: Breadcrumb[]
   onMenuToggle: () => void
 }
 
-export default function AdminHeader({ title, onMenuToggle }: AdminHeaderProps) {
+export default function AdminHeader({ title, breadcrumbs, onMenuToggle }: AdminHeaderProps) {
   const [notificationCount] = useState(3)
+  const [searchOpen, setSearchOpen] = useState(false)
 
   return (
     <header className="sticky top-0 z-30 w-full h-16 border-b border-border/40 bg-cinema-dark/80 backdrop-blur-xl supports-[backdrop-filter]:bg-cinema-dark/60">
       <div className="flex items-center justify-between h-full px-4 lg:px-6">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 min-w-0">
           <Button
             variant="ghost"
             size="icon"
             onClick={onMenuToggle}
-            className="text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground shrink-0"
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <h1 className="text-lg font-semibold text-foreground hidden sm:block">{title}</h1>
+          {breadcrumbs && breadcrumbs.length > 0 ? (
+            <nav className="hidden sm:flex items-center gap-1.5 text-sm min-w-0">
+              {breadcrumbs.map((crumb, i) => (
+                <span key={crumb.href} className="flex items-center gap-1.5 min-w-0">
+                  {i > 0 && (
+                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  )}
+                  {i === breadcrumbs.length - 1 ? (
+                    <span className="font-semibold text-foreground truncate">
+                      {crumb.label}
+                    </span>
+                  ) : (
+                    <Link
+                      href={crumb.href}
+                      className="text-muted-foreground hover:text-foreground transition-colors truncate"
+                    >
+                      {crumb.label}
+                    </Link>
+                  )}
+                </span>
+              ))}
+            </nav>
+          ) : (
+            <h1 className="text-lg font-semibold text-foreground hidden sm:block truncate">
+              {title}
+            </h1>
+          )}
         </div>
 
         <div className="flex items-center gap-3">
@@ -46,6 +80,15 @@ export default function AdminHeader({ title, onMenuToggle }: AdminHeaderProps) {
               className="w-48 lg:w-64 pl-9 h-9 bg-cinema-dark border-border/60 focus-visible:ring-gold"
             />
           </div>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden text-muted-foreground hover:text-foreground"
+            onClick={() => setSearchOpen(!searchOpen)}
+          >
+            <Search className="h-5 w-5" />
+          </Button>
 
           <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-foreground">
             <Bell className="h-5 w-5" />

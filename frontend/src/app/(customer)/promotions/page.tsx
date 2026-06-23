@@ -96,7 +96,7 @@ export default function PromotionsPage() {
     queryFn: () => getPromotions(),
   })
 
-  const promotions = data?.data?.data ?? []
+  const promotions = data?.data ?? []
 
   return (
     <div className="container py-8">

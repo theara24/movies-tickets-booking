@@ -15,7 +15,9 @@ let ResponseInterceptor = class ResponseInterceptor {
             if (responseData && responseData.__raw) {
                 return responseData.data;
             }
-            if (responseData && responseData.data !== undefined && responseData.pagination) {
+            if (responseData &&
+                responseData.data !== undefined &&
+                responseData.pagination) {
                 return {
                     success: true,
                     message: responseData.message || 'Success',

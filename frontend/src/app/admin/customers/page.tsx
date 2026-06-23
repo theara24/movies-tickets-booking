@@ -29,7 +29,7 @@ export default function AdminCustomersPage() {
     queryFn: () => getCustomers({ search: search || undefined }),
   })
 
-  const customers = data?.data?.data ?? []
+  const customers = data?.data ?? []
 
   return (
     <div className="space-y-6">

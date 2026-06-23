@@ -6,6 +6,23 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Seeding database...');
 
+  console.log('Cleaning database...');
+  await prisma.auditLog.deleteMany();
+  await prisma.notification.deleteMany();
+  await prisma.foodOrderItem.deleteMany();
+  await prisma.foodOrder.deleteMany();
+  await prisma.foodItem.deleteMany();
+  await prisma.ticket.deleteMany();
+  await prisma.payment.deleteMany();
+  await prisma.bookingSeat.deleteMany();
+  await prisma.seatLock.deleteMany();
+  await prisma.booking.deleteMany();
+  await prisma.showtime.deleteMany();
+  await prisma.movieGenre.deleteMany();
+  await prisma.movie.deleteMany();
+  await prisma.seat.deleteMany();
+  await prisma.hall.deleteMany();
+
   const adminPassword = await bcrypt.hash('Admin@123', 12);
   const staffPassword = await bcrypt.hash('Staff@123', 12);
 
@@ -174,6 +191,7 @@ async function main() {
     },
   ];
 
+  let dayOffset = 1;
   for (const movieData of movies) {
     const movie = await prisma.movie.create({
       data: {
@@ -189,8 +207,9 @@ async function main() {
     });
 
     const startTime = new Date();
-    startTime.setDate(startTime.getDate() + 1);
+    startTime.setDate(startTime.getDate() + dayOffset);
     startTime.setHours(14, 0, 0, 0);
+    dayOffset++;
 
     await prisma.showtime.create({
       data: {

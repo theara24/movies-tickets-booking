@@ -28,7 +28,10 @@ export class SeatLockService {
     });
 
     if (existingLock && existingLock.userId !== userId) {
-      return { locked: false, message: 'Seat is already locked by another user' };
+      return {
+        locked: false,
+        message: 'Seat is already locked by another user',
+      };
     }
 
     await this.prisma.seatLock.upsert({
@@ -59,9 +62,19 @@ export class SeatLockService {
     seatIds: string[],
     durationMs = 600000,
   ) {
-    const results: Array<{ seatId: string; locked: boolean; message?: string; expiresAt?: Date }> = [];
+    const results: Array<{
+      seatId: string;
+      locked: boolean;
+      message?: string;
+      expiresAt?: Date;
+    }> = [];
     for (const seatId of seatIds) {
-      const result = await this.lockSeat(userId, showtimeId, seatId, durationMs);
+      const result = await this.lockSeat(
+        userId,
+        showtimeId,
+        seatId,
+        durationMs,
+      );
       results.push({ seatId, ...result });
     }
 
@@ -84,7 +97,11 @@ export class SeatLockService {
     return { released: true };
   }
 
-  async releaseMultipleSeats(userId: string, showtimeId: string, seatIds: string[]) {
+  async releaseMultipleSeats(
+    userId: string,
+    showtimeId: string,
+    seatIds: string[],
+  ) {
     await this.prisma.seatLock.updateMany({
       where: {
         seatId: { in: seatIds },

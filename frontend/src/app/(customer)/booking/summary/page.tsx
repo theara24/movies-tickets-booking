@@ -58,8 +58,8 @@ export default function BookingSummaryPage() {
     setPromoError(null)
     try {
       const res = await validatePromotion(promoCode.trim(), subtotal)
-      if (res.data.valid && res.data.discount) {
-        setPromoDiscount(res.data.discount)
+      if (res.success && res.data) {
+        setPromoDiscount(res.data.discountAmount || 0)
       } else {
         setPromoError("Invalid or expired promotion code")
         setPromoDiscount(0)

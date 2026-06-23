@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { TicketStatus } from '@prisma/client';
 
@@ -19,7 +23,13 @@ export class TicketsService {
             include: {
               bookingSeats: { include: { seat: true } },
               showtime: {
-                include: { movie: { select: { title: true, posterUrl: true, duration: true } }, cinema: true, hall: true },
+                include: {
+                  movie: {
+                    select: { title: true, posterUrl: true, duration: true },
+                  },
+                  cinema: true,
+                  hall: true,
+                },
               },
             },
           },
@@ -140,7 +150,8 @@ export class TicketsService {
         },
       },
     });
-    if (!ticket) throw new NotFoundException('Ticket not found for this booking');
+    if (!ticket)
+      throw new NotFoundException('Ticket not found for this booking');
     return ticket;
   }
 }

@@ -6,14 +6,18 @@ import { Request } from 'express';
 import { PrismaService } from '../../../database/prisma.service';
 
 @Injectable()
-export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
+export class JwtRefreshStrategy extends PassportStrategy(
+  Strategy,
+  'jwt-refresh',
+) {
   constructor(
     configService: ConfigService,
     private prisma: PrismaService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: configService.get('JWT_REFRESH_SECRET') || 'super-secret-refresh-key',
+      secretOrKey:
+        configService.get('JWT_REFRESH_SECRET') || 'super-secret-refresh-key',
       passReqToCallback: true,
     });
   }

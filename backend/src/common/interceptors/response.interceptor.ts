@@ -20,9 +20,10 @@ export interface SuccessResponse<T> {
 }
 
 @Injectable()
-export class ResponseInterceptor<T>
-  implements NestInterceptor<T, SuccessResponse<T>>
-{
+export class ResponseInterceptor<T> implements NestInterceptor<
+  T,
+  SuccessResponse<T>
+> {
   intercept(
     context: ExecutionContext,
     next: CallHandler,
@@ -33,7 +34,11 @@ export class ResponseInterceptor<T>
           return responseData.data;
         }
 
-        if (responseData && responseData.data !== undefined && responseData.pagination) {
+        if (
+          responseData &&
+          responseData.data !== undefined &&
+          responseData.pagination
+        ) {
           return {
             success: true,
             message: responseData.message || 'Success',

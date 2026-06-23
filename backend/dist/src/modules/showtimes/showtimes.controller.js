@@ -33,7 +33,9 @@ let ShowtimesController = class ShowtimesController {
     }
     findAll(movieId, cinemaId, date, page, limit) {
         return this.showtimesService.findAll({
-            movieId, cinemaId, date,
+            movieId,
+            cinemaId,
+            date,
             page: page ? parseInt(page, 10) : 1,
             limit: limit ? parseInt(limit, 10) : 20,
         });

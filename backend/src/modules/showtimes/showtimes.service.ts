@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateShowtimeDto } from './dto/create-showtime.dto';
 import { UpdateShowtimeDto } from './dto/update-showtime.dto';
@@ -8,10 +13,14 @@ export class ShowtimesService {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateShowtimeDto) {
-    const movie = await this.prisma.movie.findUnique({ where: { id: dto.movieId } });
+    const movie = await this.prisma.movie.findUnique({
+      where: { id: dto.movieId },
+    });
     if (!movie) throw new NotFoundException('Movie not found');
 
-    const hall = await this.prisma.hall.findUnique({ where: { id: dto.hallId } });
+    const hall = await this.prisma.hall.findUnique({
+      where: { id: dto.hallId },
+    });
     if (!hall) throw new NotFoundException('Hall not found');
 
     const startTime = new Date(dto.startTime);
@@ -93,7 +102,16 @@ export class ShowtimesService {
         skip,
         take: limit,
         include: {
-          movie: { select: { id: true, title: true, duration: true, posterUrl: true, rating: true, language: true } },
+          movie: {
+            select: {
+              id: true,
+              title: true,
+              duration: true,
+              posterUrl: true,
+              rating: true,
+              language: true,
+            },
+          },
           hall: { select: { id: true, name: true, capacity: true } },
           cinema: { select: { id: true, name: true, city: true } },
           _count: { select: { bookings: true } },
@@ -114,7 +132,9 @@ export class ShowtimesService {
       where: { id },
       include: {
         movie: true,
-        hall: { include: { seats: { orderBy: [{ row: 'asc' }, { column: 'asc' }] } } },
+        hall: {
+          include: { seats: { orderBy: [{ row: 'asc' }, { column: 'asc' }] } },
+        },
         cinema: true,
       },
     });

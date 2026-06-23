@@ -6,7 +6,10 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { ProcessPaymentDto } from './dto/process-payment.dto';
-import { generatePaymentRef, generateTicketRef } from '../../common/utils/generate-ref';
+import {
+  generatePaymentRef,
+  generateTicketRef,
+} from '../../common/utils/generate-ref';
 import { PaymentStatus, BookingStatus, TicketStatus } from '@prisma/client';
 import * as qrcode from 'qrcode';
 
@@ -67,7 +70,9 @@ export class PaymentsService {
         hall: booking.showtime.hall.name,
         cinema: booking.showtime.cinema.name,
         startTime: booking.showtime.startTime,
-        seats: booking.bookingSeats.map((bs) => `${bs.seat.row}${bs.seat.column}`),
+        seats: booking.bookingSeats.map(
+          (bs) => `${bs.seat.row}${bs.seat.column}`,
+        ),
       });
       const qrImage = await qrcode.toDataURL(qrData);
 
@@ -98,7 +103,12 @@ export class PaymentsService {
     return result;
   }
 
-  async findAll(query: { status?: string; userId?: string; page?: number; limit?: number }) {
+  async findAll(query: {
+    status?: string;
+    userId?: string;
+    page?: number;
+    limit?: number;
+  }) {
     const page = query.page || 1;
     const limit = query.limit || 10;
     const skip = (page - 1) * limit;
@@ -159,7 +169,8 @@ export class PaymentsService {
         },
       },
     });
-    if (!payment) throw new NotFoundException('Payment not found for this booking');
+    if (!payment)
+      throw new NotFoundException('Payment not found for this booking');
     return payment;
   }
 

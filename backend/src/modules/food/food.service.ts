@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateFoodItemDto } from './dto/create-food-item.dto';
 import { UpdateFoodItemDto } from './dto/update-food-item.dto';
@@ -36,7 +40,10 @@ export class FoodService {
   async removeItem(id: string) {
     const item = await this.prisma.foodItem.findUnique({ where: { id } });
     if (!item) throw new NotFoundException('Food item not found');
-    await this.prisma.foodItem.update({ where: { id }, data: { isActive: false } });
+    await this.prisma.foodItem.update({
+      where: { id },
+      data: { isActive: false },
+    });
     return { message: 'Food item deactivated' };
   }
 
@@ -46,8 +53,12 @@ export class FoodService {
       include: { foodOrder: true },
     });
     if (!booking) throw new NotFoundException('Booking not found');
-    if (booking.userId !== userId) throw new BadRequestException('Not your booking');
-    if (booking.foodOrder) throw new BadRequestException('Food order already exists for this booking');
+    if (booking.userId !== userId)
+      throw new BadRequestException('Not your booking');
+    if (booking.foodOrder)
+      throw new BadRequestException(
+        'Food order already exists for this booking',
+      );
 
     const foodItemIds = dto.items.map((i) => i.foodItemId);
     const foodItems = await this.prisma.foodItem.findMany({
@@ -61,7 +72,9 @@ export class FoodService {
     for (const item of dto.items) {
       const foodItem = foodItems.find((f) => f.id === item.foodItemId);
       if (foodItem && foodItem.stock < item.quantity) {
-        throw new BadRequestException(`Insufficient stock for ${foodItem.name}`);
+        throw new BadRequestException(
+          `Insufficient stock for ${foodItem.name}`,
+        );
       }
     }
 
@@ -77,7 +90,9 @@ export class FoodService {
         data: {
           orderRef,
           bookingId: dto.bookingId,
-          customerId: (await this.prisma.customer.findUnique({ where: { userId } }))?.id,
+          customerId: (
+            await this.prisma.customer.findUnique({ where: { userId } })
+          )?.id,
           totalAmount,
           notes: dto.notes,
           items: {
@@ -117,12 +132,17 @@ export class FoodService {
   }
 
   async findOrdersByUser(userId: string) {
-    const customer = await this.prisma.customer.findUnique({ where: { userId } });
+    const customer = await this.prisma.customer.findUnique({
+      where: { userId },
+    });
     if (!customer) return [];
 
     return this.prisma.foodOrder.findMany({
       where: { customerId: customer.id },
-      include: { items: { include: { foodItem: true } }, booking: { select: { bookingRef: true } } },
+      include: {
+        items: { include: { foodItem: true } },
+        booking: { select: { bookingRef: true } },
+      },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -133,12 +153,18 @@ export class FoodService {
       this.prisma.foodOrder.findMany({
         skip,
         take: limit,
-        include: { items: { include: { foodItem: true } }, booking: { select: { bookingRef: true } } },
+        include: {
+          items: { include: { foodItem: true } },
+          booking: { select: { bookingRef: true } },
+        },
         orderBy: { createdAt: 'desc' },
       }),
       this.prisma.foodOrder.count(),
     ]);
 
-    return { data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } };
+    return {
+      data,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
   }
 }

@@ -121,10 +121,10 @@ export class MoviesService {
 
   async getNowShowing(page = 1, limit = 20) {
     const now = new Date();
-    return this.findAll({ status: 'NOW_SHOWING' as any }, page, limit);
+    return this.findAll({ status: 'NOW_SHOWING' }, page, limit);
   }
 
   async getComingSoon(page = 1, limit = 20) {
-    return this.findAll({ status: 'COMING_SOON' as any }, page, limit);
+    return this.findAll({ status: 'COMING_SOON' }, page, limit);
   }
 }

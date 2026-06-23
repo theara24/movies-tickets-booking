@@ -18,10 +18,14 @@ let ShowtimesService = class ShowtimesService {
         this.prisma = prisma;
     }
     async create(dto) {
-        const movie = await this.prisma.movie.findUnique({ where: { id: dto.movieId } });
+        const movie = await this.prisma.movie.findUnique({
+            where: { id: dto.movieId },
+        });
         if (!movie)
             throw new common_1.NotFoundException('Movie not found');
-        const hall = await this.prisma.hall.findUnique({ where: { id: dto.hallId } });
+        const hall = await this.prisma.hall.findUnique({
+            where: { id: dto.hallId },
+        });
         if (!hall)
             throw new common_1.NotFoundException('Hall not found');
         const startTime = new Date(dto.startTime);
@@ -90,7 +94,16 @@ let ShowtimesService = class ShowtimesService {
                 skip,
                 take: limit,
                 include: {
-                    movie: { select: { id: true, title: true, duration: true, posterUrl: true, rating: true, language: true } },
+                    movie: {
+                        select: {
+                            id: true,
+                            title: true,
+                            duration: true,
+                            posterUrl: true,
+                            rating: true,
+                            language: true,
+                        },
+                    },
                     hall: { select: { id: true, name: true, capacity: true } },
                     cinema: { select: { id: true, name: true, city: true } },
                     _count: { select: { bookings: true } },
@@ -109,7 +122,9 @@ let ShowtimesService = class ShowtimesService {
             where: { id },
             include: {
                 movie: true,
-                hall: { include: { seats: { orderBy: [{ row: 'asc' }, { column: 'asc' }] } } },
+                hall: {
+                    include: { seats: { orderBy: [{ row: 'asc' }, { column: 'asc' }] } },
+                },
                 cinema: true,
             },
         });

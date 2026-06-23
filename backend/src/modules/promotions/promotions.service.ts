@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { CreatePromotionDto } from './dto/create-promotion.dto';
 import { UpdatePromotionDto } from './dto/update-promotion.dto';
@@ -8,7 +12,9 @@ export class PromotionsService {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreatePromotionDto) {
-    const existing = await this.prisma.promotion.findUnique({ where: { code: dto.code } });
+    const existing = await this.prisma.promotion.findUnique({
+      where: { code: dto.code },
+    });
     if (existing) throw new ConflictException('Promotion code already exists');
 
     return this.prisma.promotion.create({
@@ -23,7 +29,11 @@ export class PromotionsService {
   async findAll(page = 1, limit = 20) {
     const skip = (page - 1) * limit;
     const [data, total] = await Promise.all([
-      this.prisma.promotion.findMany({ skip, take: limit, orderBy: { createdAt: 'desc' } }),
+      this.prisma.promotion.findMany({
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
       this.prisma.promotion.count(),
     ]);
 
@@ -43,15 +53,20 @@ export class PromotionsService {
   }
 
   async findByCode(code: string) {
-    const promotion = await this.prisma.promotion.findUnique({ where: { code } });
+    const promotion = await this.prisma.promotion.findUnique({
+      where: { code },
+    });
     if (!promotion) throw new NotFoundException('Promotion not found');
     return promotion;
   }
 
   async validateCode(code: string, amount: number) {
-    const promotion = await this.prisma.promotion.findUnique({ where: { code } });
+    const promotion = await this.prisma.promotion.findUnique({
+      where: { code },
+    });
     if (!promotion) throw new NotFoundException('Invalid promotion code');
-    if (!promotion.isActive) throw new ConflictException('Promotion is inactive');
+    if (!promotion.isActive)
+      throw new ConflictException('Promotion is inactive');
     if (new Date() < promotion.startsAt || new Date() > promotion.expiresAt) {
       throw new ConflictException('Promotion has expired');
     }
@@ -59,13 +74,16 @@ export class PromotionsService {
       throw new ConflictException('Promotion usage limit reached');
     }
     if (promotion.minAmount && amount < Number(promotion.minAmount)) {
-      throw new ConflictException(`Minimum order amount of ${promotion.minAmount} required`);
+      throw new ConflictException(
+        `Minimum order amount of ${promotion.minAmount} required`,
+      );
     }
 
     let discount = 0;
     if (promotion.type === 'PERCENTAGE') {
       discount = amount * (Number(promotion.value) / 100);
-      if (promotion.maxDiscount) discount = Math.min(discount, Number(promotion.maxDiscount));
+      if (promotion.maxDiscount)
+        discount = Math.min(discount, Number(promotion.maxDiscount));
     } else if (promotion.type === 'FIXED') {
       discount = Number(promotion.value);
     }

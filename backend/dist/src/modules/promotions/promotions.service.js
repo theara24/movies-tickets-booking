@@ -18,7 +18,9 @@ let PromotionsService = class PromotionsService {
         this.prisma = prisma;
     }
     async create(dto) {
-        const existing = await this.prisma.promotion.findUnique({ where: { code: dto.code } });
+        const existing = await this.prisma.promotion.findUnique({
+            where: { code: dto.code },
+        });
         if (existing)
             throw new common_1.ConflictException('Promotion code already exists');
         return this.prisma.promotion.create({
@@ -32,7 +34,11 @@ let PromotionsService = class PromotionsService {
     async findAll(page = 1, limit = 20) {
         const skip = (page - 1) * limit;
         const [data, total] = await Promise.all([
-            this.prisma.promotion.findMany({ skip, take: limit, orderBy: { createdAt: 'desc' } }),
+            this.prisma.promotion.findMany({
+                skip,
+                take: limit,
+                orderBy: { createdAt: 'desc' },
+            }),
             this.prisma.promotion.count(),
         ]);
         return {
@@ -50,13 +56,17 @@ let PromotionsService = class PromotionsService {
         return promotion;
     }
     async findByCode(code) {
-        const promotion = await this.prisma.promotion.findUnique({ where: { code } });
+        const promotion = await this.prisma.promotion.findUnique({
+            where: { code },
+        });
         if (!promotion)
             throw new common_1.NotFoundException('Promotion not found');
         return promotion;
     }
     async validateCode(code, amount) {
-        const promotion = await this.prisma.promotion.findUnique({ where: { code } });
+        const promotion = await this.prisma.promotion.findUnique({
+            where: { code },
+        });
         if (!promotion)
             throw new common_1.NotFoundException('Invalid promotion code');
         if (!promotion.isActive)

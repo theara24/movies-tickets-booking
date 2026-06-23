@@ -18,7 +18,7 @@ interface AuthState {
 interface AuthActions {
   login: (email: string, password: string) => Promise<void>
   register: (data: RegisterData) => Promise<void>
-  logout: () => void
+  logout: () => Promise<void>
   loadProfile: () => Promise<void>
   updateProfile: (data: Partial<User>) => Promise<void>
   clearError: () => void
@@ -62,10 +62,12 @@ export const useAuthStore = create<AuthStore>()((set) => ({
     }
   },
 
-  logout: () => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("auth_token")
-      localStorage.removeItem("user")
+  logout: async () => {
+    try {
+      const { logout: logoutApi } = await import("@/services/api/auth.service")
+      await logoutApi()
+    } catch {
+      // ignore
     }
     set({ user: null, isAuthenticated: false, error: null })
   },

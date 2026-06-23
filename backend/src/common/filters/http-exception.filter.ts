@@ -18,9 +18,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     const errorResponse = {
       success: false,
-      message: typeof exceptionResponse === 'string' 
-        ? exceptionResponse 
-        : (exceptionResponse as any).message || exception.message,
+      message:
+        typeof exceptionResponse === 'string'
+          ? exceptionResponse
+          : (exceptionResponse as any).message || exception.message,
       error: {
         statusCode: status,
         path: request.url,
@@ -28,7 +29,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
       },
     };
 
-    if (typeof exceptionResponse === 'object' && Array.isArray((exceptionResponse as any).message)) {
+    if (
+      typeof exceptionResponse === 'object' &&
+      Array.isArray((exceptionResponse as any).message)
+    ) {
       errorResponse.message = (exceptionResponse as any).message[0];
       errorResponse['errors'] = (exceptionResponse as any).message;
     }

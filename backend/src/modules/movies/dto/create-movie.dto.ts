@@ -1,4 +1,11 @@
-import { IsString, IsInt, IsEnum, IsOptional, IsArray, IsDateString } from 'class-validator';
+import {
+  IsString,
+  IsInt,
+  IsEnum,
+  IsOptional,
+  IsArray,
+  IsDateString,
+} from 'class-validator';
 import { MovieStatus } from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 

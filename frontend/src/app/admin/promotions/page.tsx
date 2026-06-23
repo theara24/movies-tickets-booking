@@ -31,7 +31,7 @@ export default function AdminPromotionsPage() {
     },
   })
 
-  const promotions = (data?.data?.data ?? []).filter((p) =>
+  const promotions = (data?.data ?? []).filter((p) =>
     !search || p.code.toLowerCase().includes(search.toLowerCase()) || p.title.toLowerCase().includes(search.toLowerCase()),
   )
 

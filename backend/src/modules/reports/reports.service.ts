@@ -53,7 +53,9 @@ export class ReportsService {
       where: { paidAt: { gte: startOfMonth, lte: endOfMonth }, status: 'PAID' },
       include: {
         booking: {
-          include: { showtime: { include: { movie: { select: { title: true } } } } },
+          include: {
+            showtime: { include: { movie: { select: { title: true } } } },
+          },
         },
       },
       orderBy: { paidAt: 'asc' },
@@ -111,13 +113,22 @@ export class ReportsService {
     const showtimeIds = bookings.map((b) => b.showtimeId);
     const showtimes = await this.prisma.showtime.findMany({
       where: { id: { in: showtimeIds } },
-      include: { movie: { select: { id: true, title: true, posterUrl: true, rating: true } } },
+      include: {
+        movie: {
+          select: { id: true, title: true, posterUrl: true, rating: true },
+        },
+      },
     });
 
     return bookings.map((b) => {
       const showtime = showtimes.find((s) => s.id === b.showtimeId);
       return {
-        movie: showtime?.movie || { id: 'unknown', title: 'Unknown', posterUrl: null, rating: null },
+        movie: showtime?.movie || {
+          id: 'unknown',
+          title: 'Unknown',
+          posterUrl: null,
+          rating: null,
+        },
         totalBookings: b._count,
         totalRevenue: b._sum.finalAmount || 0,
       };
@@ -149,9 +160,10 @@ export class ReportsService {
       where: where.showtime || {},
     });
 
-    const avgOccupancy = totalShowtimes > 0
-      ? (bookedSeats / (totalSeats * totalShowtimes)) * 100
-      : 0;
+    const avgOccupancy =
+      totalShowtimes > 0
+        ? (bookedSeats / (totalSeats * totalShowtimes)) * 100
+        : 0;
 
     return {
       totalSeats,
@@ -216,7 +228,8 @@ export class ReportsService {
     ]);
 
     const cancelledOrRefunded = cancelled + refunded;
-    const cancellationRate = total > 0 ? (cancelledOrRefunded / total) * 100 : 0;
+    const cancellationRate =
+      total > 0 ? (cancelledOrRefunded / total) * 100 : 0;
 
     return {
       totalBookings: total,
@@ -247,7 +260,11 @@ export class ReportsService {
       this.prisma.movie.count({ where: { status: 'NOW_SHOWING' } }),
       this.prisma.booking.count({ where: { status: 'CONFIRMED' } }),
       this.prisma.showtime.count({
-        where: { startTime: { gte: new Date() }, isActive: true, status: 'SCHEDULED' },
+        where: {
+          startTime: { gte: new Date() },
+          isActive: true,
+          status: 'SCHEDULED',
+        },
       }),
     ]);
 

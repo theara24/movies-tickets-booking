@@ -1,103 +1,136 @@
-import { ApiResponse, Payment, PaymentMethod } from "@/types"
-import { payments, bookings } from "./mock-data"
+import client from "./client"
+import type { ApiResponse, Payment } from "@/types"
 
-interface TransactionParams {
-  page?: number
-  limit?: number
-  status?: string
-  method?: string
+interface ProcessPaymentData {
+  bookingId: string
+  method: string
+  phone?: string
 }
 
-function delay(ms: number = 300): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, Math.floor(Math.random() * ms) + 200))
-}
-
-export async function processPayment(bookingId: string, method: PaymentMethod): Promise<ApiResponse<Payment>> {
-  await delay(500)
-  const booking = bookings.find((b) => b.id === bookingId)
-  if (!booking) {
-    return { success: false, data: null as any, message: "Booking not found" }
-  }
-
-  booking.paymentStatus = "completed"
-  booking.paymentMethod = method
-
-  const payment: Payment = {
-    id: `payment-${bookingId.split("-")[1]}`,
-    bookingId,
-    amount: booking.totalAmount,
-    method,
-    status: "completed",
-    transactionId: `TXN${String(Math.floor(Math.random() * 10000000)).padStart(7, "0")}`,
-    khqrImage: method === "khqr" ? `/images/qr/payment-${bookingId.split("-")[1]}.png` : null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  }
-
-  return { success: true, data: payment }
-}
-
-export async function getPayment(bookingId: string): Promise<ApiResponse<Payment | null>> {
-  await delay()
-  const payment = payments.find((p) => p.bookingId === bookingId) || null
-  return { success: !!payment, data: payment }
-}
-
-export async function generateKHQR(amount: number): Promise<ApiResponse<{ qrImageUrl: string; amount: number }>> {
-  await delay(300)
+function mapPayment(p: Record<string, unknown>): Payment {
   return {
-    success: true,
-    data: {
-      qrImageUrl: `/images/qr/khqr-${Date.now()}.png`,
-      amount,
-    },
+    id: p.id as string,
+    bookingId: (p.bookingId as string) || "",
+    amount: (p.amount as number) || 0,
+    method: (p.method as Payment["method"]) || "khqr",
+    status: (p.status as Payment["status"]) || "pending",
+    transactionId: (p.transactionId as string) || null,
+    khqrImage: (p.khqrImage as string) || null,
+    createdAt: (p.createdAt as string) || new Date().toISOString(),
+    updatedAt: (p.updatedAt as string) || new Date().toISOString(),
   }
 }
 
-export async function requestRefund(bookingId: string): Promise<ApiResponse<Payment>> {
-  await delay(400)
-  const booking = bookings.find((b) => b.id === bookingId)
-  if (!booking) {
-    return { success: false, data: null as any, message: "Booking not found" }
-  }
-  booking.paymentStatus = "refunded"
-  booking.status = "cancelled"
+function extractData(responseData: any) {
+  return responseData?.data || responseData
+}
 
-  const payment = payments.find((p) => p.bookingId === bookingId)
-  if (payment) {
-    payment.status = "refunded"
-  }
-
-  return {
-    success: true,
-    data: payment || ({ id: `payment-${bookingId}`, bookingId, amount: booking.totalAmount, status: "refunded" } as Payment),
+export async function processPayment(
+  data: ProcessPaymentData,
+): Promise<ApiResponse<Payment>> {
+  try {
+    const { data: responseData } = await client.post("/payments/process", {
+      bookingId: data.bookingId,
+      method: data.method,
+      phone: data.phone,
+    })
+    const d = extractData(responseData)
+    return { success: true, data: mapPayment(d) }
+  } catch (error: any) {
+    return {
+      success: false,
+      data: null as any,
+      message: error.response?.data?.message || error.message,
+    }
   }
 }
 
-export async function getTransactions(params?: TransactionParams): Promise<
-  ApiResponse<{
-    payments: Payment[]
-    total: number
-    page: number
-    limit: number
-    totalPages: number
-  }>
-> {
-  await delay()
-  let filtered = [...payments]
-  if (params?.status) {
-    filtered = filtered.filter((p) => p.status === params.status)
+export async function getPayment(
+  id: string,
+): Promise<ApiResponse<Payment | null>> {
+  try {
+    const { data: responseData } = await client.get(`/payments/${id}`)
+    const d = extractData(responseData)
+    return { success: true, data: mapPayment(d) }
+  } catch (error: any) {
+    return {
+      success: false,
+      data: null,
+      message: error.response?.data?.message || error.message,
+    }
   }
-  if (params?.method) {
-    filtered = filtered.filter((p) => p.method === params.method)
+}
+
+export async function getPaymentByBooking(
+  bookingId: string,
+): Promise<ApiResponse<Payment | null>> {
+  try {
+    const { data: responseData } = await client.get(
+      `/payments/booking/${bookingId}`,
+    )
+    const d = extractData(responseData)
+    return { success: true, data: mapPayment(d) }
+  } catch (error: any) {
+    return {
+      success: false,
+      data: null,
+      message: error.response?.data?.message || error.message,
+    }
   }
+}
 
-  const page = params?.page || 1
-  const limit = params?.limit || 10
-  const total = filtered.length
-  const totalPages = Math.ceil(total / limit)
-  const start = (page - 1) * limit
-  const paged = filtered.slice(start, start + limit)
+export async function generateKHQR(
+  paymentId: string,
+): Promise<ApiResponse<{ qrImage: string }>> {
+  try {
+    const { data: responseData } = await client.get(
+      `/payments/${paymentId}`,
+    )
+    const d = extractData(responseData)
+    return {
+      success: true,
+      data: { qrImage: (d.khqrImage as string) || "" },
+    }
+  } catch (error: any) {
+    return {
+      success: false,
+      data: null as any,
+      message: error.response?.data?.message || error.message,
+    }
+  }
+}
 
-  return { success: true, data: { payments: paged, total, page, limit, totalPages } }
+export async function requestRefund(
+  paymentId: string,
+): Promise<ApiResponse<{ message: string }>> {
+  try {
+    const { data: responseData } = await client.post(
+      `/payments/${paymentId}/refund`,
+    )
+    return {
+      success: true,
+      data: responseData?.data || responseData || { message: "Refund initiated" },
+    }
+  } catch (error: any) {
+    return {
+      success: false,
+      data: null as any,
+      message: error.response?.data?.message || error.message,
+    }
+  }
+}
+
+export async function getTransactions(params?: Record<string, unknown>): Promise<ApiResponse<Payment[]>> {
+  try {
+    const { data: responseData } = await client.get("/payments/my-payments", { params })
+    const d = extractData(responseData)
+    const list = Array.isArray(d) ? d : d?.items || d?.data || []
+    return { success: true, data: list.map(mapPayment) }
+  } catch (error: any) {
+    return {
+      success: false,
+      data: [],
+      message: error.response?.data?.message || error.message,
+    }
+  }
 }

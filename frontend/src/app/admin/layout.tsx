@@ -1,17 +1,18 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect, useMemo } from "react"
+import { useRouter, usePathname } from "next/navigation"
 import AdminSidebar from "@/components/layout/admin-sidebar"
 import AdminHeader from "@/components/layout/admin-header"
 import { useAuthStore } from "@/store/auth-store"
 import { Loader2 } from "lucide-react"
+import { getBreadcrumbs, findActiveItem } from "@/lib/admin-nav"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [pageTitle, setPageTitle] = useState("Dashboard")
   const { isAuthenticated, isLoading, loadProfile } = useAuthStore()
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     loadProfile()
@@ -19,9 +20,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push("/login")
+      router.push("/auth/login")
     }
   }, [isAuthenticated, isLoading, router])
+
+  const breadcrumbs = useMemo(() => getBreadcrumbs(pathname), [pathname])
+  const activeItem = useMemo(() => findActiveItem(pathname), [pathname])
+  const pageTitle = activeItem?.label ?? "Dashboard"
 
   if (isLoading) {
     return (
@@ -41,7 +46,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div
         className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? "ml-16" : "ml-60"}`}
       >
-        <AdminHeader title={pageTitle} onMenuToggle={() => setSidebarCollapsed(!sidebarCollapsed)} />
+        <AdminHeader
+          title={pageTitle}
+          breadcrumbs={breadcrumbs}
+          onMenuToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+        />
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
       </div>
     </div>

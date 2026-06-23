@@ -7,9 +7,19 @@ import {
 import { PrismaService } from '../../database/prisma.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { BookingQueryDto } from './dto/booking-query.dto';
-import { generateBookingRef, generateTicketRef, generatePaymentRef, generateOrderRef } from '../../common/utils/generate-ref';
+import {
+  generateBookingRef,
+  generateTicketRef,
+  generatePaymentRef,
+  generateOrderRef,
+} from '../../common/utils/generate-ref';
 import { SeatLockGateway } from '../realtime/seat-lock.gateway';
-import { BookingStatus, PaymentStatus, TicketStatus, AuditAction } from '@prisma/client';
+import {
+  BookingStatus,
+  PaymentStatus,
+  TicketStatus,
+  AuditAction,
+} from '@prisma/client';
 import * as qrcode from 'qrcode';
 
 @Injectable()
@@ -58,7 +68,9 @@ export class BookingsService {
     ).map((bs) => bs.seatId);
 
     if (bookedSeatIds.length > 0) {
-      throw new ConflictException(`Seats ${bookedSeatIds.join(', ')} are already booked`);
+      throw new ConflictException(
+        `Seats ${bookedSeatIds.join(', ')} are already booked`,
+      );
     }
 
     const lockedSeats = await this.prisma.seatLock.findMany({
@@ -96,13 +108,18 @@ export class BookingsService {
       }
 
       if (promotion.minAmount && baseAmount < Number(promotion.minAmount)) {
-        throw new BadRequestException(`Minimum amount ${promotion.minAmount} not met`);
+        throw new BadRequestException(
+          `Minimum amount ${promotion.minAmount} not met`,
+        );
       }
 
       if (promotion.type === 'PERCENTAGE') {
         discountAmount = baseAmount * (Number(promotion.value) / 100);
         if (promotion.maxDiscount) {
-          discountAmount = Math.min(discountAmount, Number(promotion.maxDiscount));
+          discountAmount = Math.min(
+            discountAmount,
+            Number(promotion.maxDiscount),
+          );
         }
       } else if (promotion.type === 'FIXED') {
         discountAmount = Number(promotion.value);
@@ -175,7 +192,13 @@ export class BookingsService {
         include: {
           bookingSeats: { include: { seat: true } },
           showtime: {
-            include: { movie: { select: { title: true, posterUrl: true, duration: true } }, cinema: true, hall: true },
+            include: {
+              movie: {
+                select: { title: true, posterUrl: true, duration: true },
+              },
+              cinema: true,
+              hall: true,
+            },
           },
           payment: true,
           ticket: true,
@@ -203,7 +226,9 @@ export class BookingsService {
         payment: true,
         ticket: true,
         promotion: true,
-        user: { select: { id: true, fullName: true, email: true, phone: true } },
+        user: {
+          select: { id: true, fullName: true, email: true, phone: true },
+        },
       },
     });
     if (!booking) throw new NotFoundException('Booking not found');
@@ -245,7 +270,15 @@ export class BookingsService {
     if (booking.status === 'REFUNDED') {
       throw new BadRequestException('Booking has already been refunded');
     }
-    if (booking.showtimeId && new Date() > (await this.prisma.showtime.findUnique({ where: { id: booking.showtimeId } }))?.startTime!) {
+    if (
+      booking.showtimeId &&
+      new Date() >
+        (
+          await this.prisma.showtime.findUnique({
+            where: { id: booking.showtimeId },
+          })
+        )?.startTime!
+    ) {
       throw new BadRequestException('Cannot cancel past showtime');
     }
 
@@ -267,13 +300,21 @@ export class BookingsService {
       });
     }
 
-    const seatIds = (await this.prisma.bookingSeat.findMany({ where: { bookingId: id }, select: { seatId: true } })).map(bs => bs.seatId);
+    const seatIds = (
+      await this.prisma.bookingSeat.findMany({
+        where: { bookingId: id },
+        select: { seatId: true },
+      })
+    ).map((bs) => bs.seatId);
     this.seatLockGateway.broadcastSeatReleased(booking.showtimeId, seatIds);
 
     await this.prisma.auditLog.create({
       data: {
         userId,
-        action: booking.payment?.status === 'PAID' ? AuditAction.REFUND : AuditAction.UPDATE,
+        action:
+          booking.payment?.status === 'PAID'
+            ? AuditAction.REFUND
+            : AuditAction.UPDATE,
         entity: 'Booking',
         entityId: id,
         oldValue: { status: booking.status },
@@ -285,15 +326,16 @@ export class BookingsService {
   }
 
   async getBookingSummary(userId: string) {
-    const [totalBookings, activeBookings, cancelledBookings, totalSpent] = await Promise.all([
-      this.prisma.booking.count({ where: { userId } }),
-      this.prisma.booking.count({ where: { userId, status: 'CONFIRMED' } }),
-      this.prisma.booking.count({ where: { userId, status: 'CANCELLED' } }),
-      this.prisma.booking.aggregate({
-        where: { userId, status: 'CONFIRMED' },
-        _sum: { finalAmount: true },
-      }),
-    ]);
+    const [totalBookings, activeBookings, cancelledBookings, totalSpent] =
+      await Promise.all([
+        this.prisma.booking.count({ where: { userId } }),
+        this.prisma.booking.count({ where: { userId, status: 'CONFIRMED' } }),
+        this.prisma.booking.count({ where: { userId, status: 'CANCELLED' } }),
+        this.prisma.booking.aggregate({
+          where: { userId, status: 'CONFIRMED' },
+          _sum: { finalAmount: true },
+        }),
+      ]);
 
     return {
       totalBookings,

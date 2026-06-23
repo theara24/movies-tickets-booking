@@ -156,7 +156,13 @@ let BookingsService = class BookingsService {
                 include: {
                     bookingSeats: { include: { seat: true } },
                     showtime: {
-                        include: { movie: { select: { title: true, posterUrl: true, duration: true } }, cinema: true, hall: true },
+                        include: {
+                            movie: {
+                                select: { title: true, posterUrl: true, duration: true },
+                            },
+                            cinema: true,
+                            hall: true,
+                        },
                     },
                     payment: true,
                     ticket: true,
@@ -182,7 +188,9 @@ let BookingsService = class BookingsService {
                 payment: true,
                 ticket: true,
                 promotion: true,
-                user: { select: { id: true, fullName: true, email: true, phone: true } },
+                user: {
+                    select: { id: true, fullName: true, email: true, phone: true },
+                },
             },
         });
         if (!booking)
@@ -223,7 +231,11 @@ let BookingsService = class BookingsService {
         if (booking.status === 'REFUNDED') {
             throw new common_1.BadRequestException('Booking has already been refunded');
         }
-        if (booking.showtimeId && new Date() > (await this.prisma.showtime.findUnique({ where: { id: booking.showtimeId } }))?.startTime) {
+        if (booking.showtimeId &&
+            new Date() >
+                (await this.prisma.showtime.findUnique({
+                    where: { id: booking.showtimeId },
+                }))?.startTime) {
             throw new common_1.BadRequestException('Cannot cancel past showtime');
         }
         const updateData = { status: 'CANCELLED', cancelledAt: new Date() };
@@ -240,12 +252,17 @@ let BookingsService = class BookingsService {
                 data: { status: 'REFUNDED' },
             });
         }
-        const seatIds = (await this.prisma.bookingSeat.findMany({ where: { bookingId: id }, select: { seatId: true } })).map(bs => bs.seatId);
+        const seatIds = (await this.prisma.bookingSeat.findMany({
+            where: { bookingId: id },
+            select: { seatId: true },
+        })).map((bs) => bs.seatId);
         this.seatLockGateway.broadcastSeatReleased(booking.showtimeId, seatIds);
         await this.prisma.auditLog.create({
             data: {
                 userId,
-                action: booking.payment?.status === 'PAID' ? client_1.AuditAction.REFUND : client_1.AuditAction.UPDATE,
+                action: booking.payment?.status === 'PAID'
+                    ? client_1.AuditAction.REFUND
+                    : client_1.AuditAction.UPDATE,
                 entity: 'Booking',
                 entityId: id,
                 oldValue: { status: booking.status },

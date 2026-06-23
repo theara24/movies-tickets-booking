@@ -1,82 +1,120 @@
-import { ApiResponse, User, Booking, PaginatedResponse } from "@/types"
-import { users, bookings } from "./mock-data"
+import client from "./client"
+import type { ApiResponse, User, Booking } from "@/types"
 
-interface GetCustomersParams {
-  page?: number
-  limit?: number
-  search?: string
-  tier?: string
-}
-
-function delay(ms: number = 300): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, Math.floor(Math.random() * ms) + 200))
-}
-
-export async function getCustomers(
-  params?: GetCustomersParams
-): Promise<ApiResponse<PaginatedResponse<User>>> {
-  await delay()
-  let filtered = users.filter((u) => u.role === "customer")
-  if (params?.search) {
-    const q = params.search.toLowerCase()
-    filtered = filtered.filter((u) => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q))
-  }
-  if (params?.tier) {
-    filtered = filtered.filter((u) => u.loyaltyTier === params.tier)
-  }
-  const page = params?.page || 1
-  const limit = params?.limit || 10
-  const total = filtered.length
-  const totalPages = Math.ceil(total / limit)
-  const start = (page - 1) * limit
-  const paged = filtered.slice(start, start + limit)
+function mapBooking(b: Record<string, unknown>): Booking {
   return {
-    success: true,
-    data: { data: paged, total, page, limit, totalPages },
+    id: b.id as string,
+    userId: (b.userId as string) || "",
+    showtimeId: (b.showtimeId as string) || "",
+    seats: (b.seats as Booking["seats"]) || [],
+    totalAmount: (b.totalAmount as number) || 0,
+    status: (b.status as Booking["status"]) || "pending",
+    paymentStatus: (b.paymentStatus as Booking["paymentStatus"]) || "pending",
+    paymentMethod: (b.paymentMethod as Booking["paymentMethod"]) || null,
+    qrCode: (b.qrCode as string) || "",
+    createdAt: (b.createdAt as string) || new Date().toISOString(),
+    showtime: b.showtime as Booking["showtime"],
+    foodItems: (b.foodItems as Booking["foodItems"]) || [],
   }
 }
 
-export async function getCustomer(id: string): Promise<ApiResponse<User | null>> {
-  await delay()
-  const user = users.find((u) => u.id === id && u.role === "customer") || null
-  return { success: !!user, data: user }
+function mapUser(u: Record<string, unknown>): User {
+  return {
+    id: u.id as string,
+    email: u.email as string,
+    name: (u.fullName as string) || (u.name as string) || "",
+    phone: (u.phone as string) || "",
+    avatar: (u.avatar as string) || null,
+    role: ((u.role as string)?.toLowerCase() as User["role"]) || "customer",
+    loyaltyPoints: (u.loyaltyPoints as number) || 0,
+    loyaltyTier: (u.loyaltyTier as User["loyaltyTier"]) || "bronze",
+    createdAt: (u.createdAt as string) || new Date().toISOString(),
+  }
 }
 
-export async function getCustomerBookings(id: string): Promise<ApiResponse<Booking[]>> {
-  await delay()
-  const result = bookings.filter((b) => b.userId === id)
-  return { success: true, data: result }
+function extractData(responseData: any) {
+  return responseData?.data || responseData
+}
+
+export async function getCustomers(params?: Record<string, unknown>): Promise<ApiResponse<User[]>> {
+  try {
+    const { data: responseData } = await client.get("/users", {
+      params: { ...params, limit: params?.limit ?? 100 },
+    })
+    const d = extractData(responseData)
+    const list = Array.isArray(d) ? d : d?.items || d?.data || []
+    return { success: true, data: list.map(mapUser) }
+  } catch (error: any) {
+    return {
+      success: false,
+      data: [],
+      message: error.response?.data?.message || error.message,
+    }
+  }
+}
+
+export async function getCustomer(
+  id: string,
+): Promise<ApiResponse<User | null>> {
+  try {
+    const { data: responseData } = await client.get(`/users/${id}`)
+    const d = extractData(responseData)
+    return { success: true, data: mapUser(d) }
+  } catch (error: any) {
+    return {
+      success: false,
+      data: null,
+      message: error.response?.data?.message || error.message,
+    }
+  }
+}
+
+export async function getCustomerBookings(
+  id: string,
+): Promise<ApiResponse<Booking[]>> {
+  try {
+    const { data: responseData } = await client.get("/bookings", {
+      params: { userId: id, limit: "50" },
+    })
+    const d = extractData(responseData)
+    const list = Array.isArray(d) ? d : d?.items || d?.data || []
+    return { success: true, data: list.map(mapBooking) }
+  } catch (error: any) {
+    return {
+      success: false,
+      data: [],
+      message: error.response?.data?.message || error.message,
+    }
+  }
 }
 
 export async function getCustomerLoyalty(
-  id: string
+  id: string,
 ): Promise<
   ApiResponse<{
     points: number
     tier: string
     pointsToNextTier: number
     totalSpent: number
-  } | null>
+  }>
 > {
-  await delay()
-  const user = users.find((u) => u.id === id && u.role === "customer")
-  if (!user) return { success: false, data: null, message: "Customer not found" }
-
-  const thresholds: Record<string, number> = { bronze: 1000, silver: 5000, gold: 15000, platinum: 0 }
-  const nextTier = user.loyaltyTier === "bronze" ? "silver" : user.loyaltyTier === "silver" ? "gold" : user.loyaltyTier === "gold" ? "platinum" : null
-  const nextThreshold = nextTier ? thresholds[user.loyaltyTier] || 0 : 0
-  const pointsToNextTier = nextTier ? Math.max(0, nextThreshold - user.loyaltyPoints) : 0
-
-  const userBookings = bookings.filter((b) => b.userId === id && b.status !== "cancelled")
-  const totalSpent = userBookings.reduce((sum, b) => sum + b.totalAmount, 0)
-
-  return {
-    success: true,
-    data: {
-      points: user.loyaltyPoints,
-      tier: user.loyaltyTier,
-      pointsToNextTier,
-      totalSpent,
-    },
+  try {
+    const { data: responseData } = await client.get(`/users/${id}`)
+    const d = extractData(responseData)
+    return {
+      success: true,
+      data: {
+        points: (d.loyaltyPoints as number) || 0,
+        tier: (d.loyaltyTier as string) || "bronze",
+        pointsToNextTier: (d.pointsToNextTier as number) || 0,
+        totalSpent: (d.totalSpent as number) || 0,
+      },
+    }
+  } catch (error: any) {
+    return {
+      success: false,
+      data: null as any,
+      message: error.response?.data?.message || error.message,
+    }
   }
 }

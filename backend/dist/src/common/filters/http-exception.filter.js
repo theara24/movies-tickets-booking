@@ -26,7 +26,8 @@ let HttpExceptionFilter = class HttpExceptionFilter {
                 timestamp: new Date().toISOString(),
             },
         };
-        if (typeof exceptionResponse === 'object' && Array.isArray(exceptionResponse.message)) {
+        if (typeof exceptionResponse === 'object' &&
+            Array.isArray(exceptionResponse.message)) {
             errorResponse.message = exceptionResponse.message[0];
             errorResponse['errors'] = exceptionResponse.message;
         }

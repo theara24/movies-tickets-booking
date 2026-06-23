@@ -1,7 +1,7 @@
 export const APP_NAME = "CinePremium"
 export const APP_DESCRIPTION = "Premium movie ticket booking platform"
 
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api"
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1"
 
 export const SEAT_TYPES = {
   STANDARD: "standard",

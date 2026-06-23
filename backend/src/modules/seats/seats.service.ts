@@ -60,7 +60,10 @@ export class SeatsService {
 
     return showtime.hall.seats.map((seat) => ({
       ...seat,
-      isAvailable: !unavailableIds.has(seat.id) && seat.isActive && seat.status === 'AVAILABLE',
+      isAvailable:
+        !unavailableIds.has(seat.id) &&
+        seat.isActive &&
+        seat.status === 'AVAILABLE',
     }));
   }
 }

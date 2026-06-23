@@ -18,7 +18,9 @@ import { Injectable } from '@nestjs/common';
   },
   namespace: '/seat-lock',
 })
-export class SeatLockGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class SeatLockGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   server: Server;
 

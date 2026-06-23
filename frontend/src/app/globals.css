@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=IM+Fell+French+Canon&display=swap');
+
 @import "tailwindcss";
 
 @theme inline {
@@ -36,6 +38,7 @@
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
   --font-sans: var(--font-geist-sans);
+  --font-serif: 'IM Fell French Canon', serif;
   --font-mono: var(--font-geist-mono);
 }
 

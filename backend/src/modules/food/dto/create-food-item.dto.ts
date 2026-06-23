@@ -1,4 +1,10 @@
-import { IsString, IsEnum, IsNumber, IsOptional, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsBoolean,
+} from 'class-validator';
 import { FoodCategory } from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 

@@ -1,8 +1,20 @@
 import {
-  Controller, Get, Post, Body, Param, Delete, Query, UseGuards,
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Query,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { BookingsService } from './bookings.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { BookingQueryDto } from './dto/booking-query.dto';
@@ -20,10 +32,7 @@ export class BookingsController {
 
   @Post()
   @ApiOperation({ summary: 'Create a new booking' })
-  create(
-    @CurrentUser('id') userId: string,
-    @Body() dto: CreateBookingDto,
-  ) {
+  create(@CurrentUser('id') userId: string, @Body() dto: CreateBookingDto) {
     return this.bookingsService.create(userId, dto);
   }
 
@@ -77,10 +86,7 @@ export class BookingsController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Cancel booking' })
-  cancel(
-    @Param('id') id: string,
-    @CurrentUser('id') userId: string,
-  ) {
+  cancel(@Param('id') id: string, @CurrentUser('id') userId: string) {
     return this.bookingsService.cancelBooking(id, userId);
   }
 }

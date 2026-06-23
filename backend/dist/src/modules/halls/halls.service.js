@@ -92,7 +92,10 @@ let HallsService = class HallsService {
             data: seats,
             skipDuplicates: true,
         });
-        return this.prisma.seat.findMany({ where: { hallId }, orderBy: { number: 'asc' } });
+        return this.prisma.seat.findMany({
+            where: { hallId },
+            orderBy: { number: 'asc' },
+        });
     }
 };
 exports.HallsService = HallsService;

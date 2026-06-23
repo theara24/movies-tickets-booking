@@ -1,4 +1,10 @@
-import { IsString, IsDateString, IsNumber, IsOptional, Min } from 'class-validator';
+import {
+  IsString,
+  IsDateString,
+  IsNumber,
+  IsOptional,
+  Min,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateShowtimeDto {

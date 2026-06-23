@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateHallDto } from './dto/create-hall.dto';
 import { UpdateHallDto } from './dto/update-hall.dto';
@@ -11,7 +15,7 @@ export class HallsService {
 
   async create(dto: CreateHallDto) {
     const capacity = dto.capacity || dto.rows * dto.columns;
-    
+
     const hall = await this.prisma.hall.create({
       data: {
         name: dto.name,
@@ -98,6 +102,9 @@ export class HallsService {
       skipDuplicates: true,
     });
 
-    return this.prisma.seat.findMany({ where: { hallId }, orderBy: { number: 'asc' } });
+    return this.prisma.seat.findMany({
+      where: { hallId },
+      orderBy: { number: 'asc' },
+    });
   }
 }

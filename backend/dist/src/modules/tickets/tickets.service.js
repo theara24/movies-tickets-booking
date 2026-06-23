@@ -30,7 +30,13 @@ let TicketsService = class TicketsService {
                         include: {
                             bookingSeats: { include: { seat: true } },
                             showtime: {
-                                include: { movie: { select: { title: true, posterUrl: true, duration: true } }, cinema: true, hall: true },
+                                include: {
+                                    movie: {
+                                        select: { title: true, posterUrl: true, duration: true },
+                                    },
+                                    cinema: true,
+                                    hall: true,
+                                },
                             },
                         },
                     },

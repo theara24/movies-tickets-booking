@@ -33,7 +33,12 @@ let CinemasService = class CinemasService {
                 halls: {
                     include: { _count: { select: { seats: true, showtimes: true } } },
                 },
-                staff: { select: { id: true, user: { select: { fullName: true, email: true } } } },
+                staff: {
+                    select: {
+                        id: true,
+                        user: { select: { fullName: true, email: true } },
+                    },
+                },
             },
         });
         if (!cinema)
@@ -50,7 +55,10 @@ let CinemasService = class CinemasService {
         const cinema = await this.prisma.cinema.findUnique({ where: { id } });
         if (!cinema)
             throw new common_1.NotFoundException('Cinema not found');
-        await this.prisma.cinema.update({ where: { id }, data: { isActive: false } });
+        await this.prisma.cinema.update({
+            where: { id },
+            data: { isActive: false },
+        });
         return { message: 'Cinema deactivated successfully' };
     }
 };

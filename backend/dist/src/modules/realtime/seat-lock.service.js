@@ -32,7 +32,10 @@ let SeatLockService = class SeatLockService {
             },
         });
         if (existingLock && existingLock.userId !== userId) {
-            return { locked: false, message: 'Seat is already locked by another user' };
+            return {
+                locked: false,
+                message: 'Seat is already locked by another user',
+            };
         }
         await this.prisma.seatLock.upsert({
             where: {

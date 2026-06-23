@@ -176,7 +176,10 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
-    const isOldPasswordValid = await bcrypt.compare(dto.oldPassword, user.password);
+    const isOldPasswordValid = await bcrypt.compare(
+      dto.oldPassword,
+      user.password,
+    );
     if (!isOldPasswordValid) {
       throw new BadRequestException('Current password is incorrect');
     }

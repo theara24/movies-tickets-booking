@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateGenreDto } from './dto/create-genre.dto';
 import { UpdateGenreDto } from './dto/update-genre.dto';
@@ -11,7 +15,8 @@ export class GenresService {
     const existing = await this.prisma.genre.findFirst({
       where: { OR: [{ name: dto.name }, { slug: dto.slug }] },
     });
-    if (existing) throw new ConflictException('Genre name or slug already exists');
+    if (existing)
+      throw new ConflictException('Genre name or slug already exists');
 
     return this.prisma.genre.create({ data: dto });
   }
