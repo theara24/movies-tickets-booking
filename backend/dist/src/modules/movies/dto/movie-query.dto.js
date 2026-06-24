@@ -13,11 +13,15 @@ exports.MovieQueryDto = void 0;
 const class_validator_1 = require("class-validator");
 const client_1 = require("@prisma/client");
 const swagger_1 = require("@nestjs/swagger");
+const class_transformer_1 = require("class-transformer");
 class MovieQueryDto {
     search;
     status;
     genreId;
     language;
+    isFeatured;
+    limit;
+    page;
 }
 exports.MovieQueryDto = MovieQueryDto;
 __decorate([
@@ -44,4 +48,27 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], MovieQueryDto.prototype, "language", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    (0, class_transformer_1.Type)(() => Boolean),
+    __metadata("design:type", Boolean)
+], MovieQueryDto.prototype, "isFeatured", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Type)(() => Number),
+    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.Min)(1),
+    __metadata("design:type", Number)
+], MovieQueryDto.prototype, "limit", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Type)(() => Number),
+    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.Min)(1),
+    __metadata("design:type", Number)
+], MovieQueryDto.prototype, "page", void 0);
 //# sourceMappingURL=movie-query.dto.js.map

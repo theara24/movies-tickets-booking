@@ -10,15 +10,20 @@ interface GetMoviesParams {
 }
 
 function mapMovie(m: Record<string, unknown>): Movie {
+  const genresRaw = m.genres as any[] | undefined
+  const genreNames = Array.isArray(genresRaw)
+    ? genresRaw.map((g) => g.genre?.name || g.name || "").filter(Boolean)
+    : (m.genre as string[]) || []
+
   return {
     id: m.id as string,
     title: m.title as string,
-    slug: m.slug as string,
+    slug: (m.slug as string) || (m.id as string),
     description: (m.description as string) || "",
     posterUrl: (m.posterUrl as string) || (m.poster as string) || "",
-    backdropUrl: (m.backdropUrl as string) || (m.backdrop as string) || "",
+    backdropUrl: (m.backdropUrl as string) || (m.backdrop as string) || (m.posterUrl as string) || "",
     trailerUrl: (m.trailerUrl as string) || null,
-    genre: (m.genre as string[]) || (m.genres as string[]) || [],
+    genre: genreNames,
     duration: (m.duration as number) || 0,
     releaseDate: (m.releaseDate as string) || "",
     endDate: (m.endDate as string) || "",

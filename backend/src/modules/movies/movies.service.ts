@@ -31,7 +31,9 @@ export class MoviesService {
   }
 
   async findAll(query: MovieQueryDto, page = 1, limit = 10) {
-    const skip = (page - 1) * limit;
+    const resolvedLimit = query.limit ?? limit;
+    const resolvedPage = query.page ?? page;
+    const skip = (resolvedPage - 1) * resolvedLimit;
     const where: any = {};
 
     if (query.search) {
@@ -50,7 +52,7 @@ export class MoviesService {
       this.prisma.movie.findMany({
         where,
         skip,
-        take: limit,
+        take: resolvedLimit,
         include: {
           genres: { include: { genre: true } },
         },
@@ -61,7 +63,7 @@ export class MoviesService {
 
     return {
       data,
-      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      pagination: { page: resolvedPage, limit: resolvedLimit, total, totalPages: Math.ceil(total / resolvedLimit) },
     };
   }
 

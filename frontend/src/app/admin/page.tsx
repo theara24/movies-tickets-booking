@@ -160,7 +160,7 @@ export default function AdminDashboardPage() {
             <Calendar className="h-4 w-4 mr-2" />
             Last 30 Days
           </Button>
-          <Button size="sm" className="bg-gold text-cinema-dark hover:bg-gold-light">
+          <Button size="sm" className="bg-red-500 text-cinema-dark hover:bg-red-400">
             <Activity className="h-4 w-4 mr-2" />
             View Report
           </Button>
@@ -189,7 +189,7 @@ export default function AdminDashboardPage() {
                       {formatCurrency(s?.totalRevenue ?? 0)}
                     </p>
                   </div>
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/10 text-gold">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-500/10 text-red-500">
                     <DollarSign className="h-5 w-5" />
                   </div>
                 </div>
@@ -218,7 +218,7 @@ export default function AdminDashboardPage() {
                       {s?.totalTickets?.toLocaleString() ?? 0}
                     </p>
                   </div>
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/10 text-gold">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-500/10 text-red-500">
                     <Ticket className="h-5 w-5" />
                   </div>
                 </div>
@@ -247,7 +247,7 @@ export default function AdminDashboardPage() {
                       {s?.totalCustomers?.toLocaleString() ?? 0}
                     </p>
                   </div>
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/10 text-gold">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-500/10 text-red-500">
                     <Users className="h-5 w-5" />
                   </div>
                 </div>
@@ -276,7 +276,7 @@ export default function AdminDashboardPage() {
                       {s?.occupancyRate ?? 0}%
                     </p>
                   </div>
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/10 text-gold">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-500/10 text-red-500">
                     <Percent className="h-5 w-5" />
                   </div>
                 </div>
@@ -306,7 +306,7 @@ export default function AdminDashboardPage() {
             </div>
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <span className="h-2.5 w-2.5 rounded-full bg-gold" />
+                <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
                 Revenue
               </span>
               <span className="flex items-center gap-1">
@@ -439,7 +439,7 @@ export default function AdminDashboardPage() {
               <CardDescription>Latest 5 booking transactions</CardDescription>
             </div>
             <Link href="/admin/bookings">
-              <Button variant="ghost" size="sm" className="text-gold hover:text-gold-light">
+              <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-400">
                 View All
                 <ArrowRight className="h-4 w-4 ml-1" />
               </Button>
@@ -459,7 +459,7 @@ export default function AdminDashboardPage() {
               <TableBody>
                 {recentBookings.map((booking) => (
                   <TableRow key={booking.id} className="hover:bg-muted/30">
-                    <TableCell className="font-mono text-xs text-gold">{booking.id}</TableCell>
+                    <TableCell className="font-mono text-xs text-red-500">{booking.id}</TableCell>
                     <TableCell className="text-sm text-foreground">{booking.customer}</TableCell>
                     <TableCell className="text-sm text-muted-foreground hidden md:table-cell">{booking.movie}</TableCell>
                     <TableCell className="text-sm text-foreground text-right font-medium">
@@ -469,7 +469,7 @@ export default function AdminDashboardPage() {
                       <Badge
                         variant={
                           booking.status === "completed"
-                            ? "gold"
+                            ? "red"
                             : booking.status === "pending"
                               ? "outline"
                               : "secondary"
@@ -493,7 +493,7 @@ export default function AdminDashboardPage() {
               <CardDescription>Next 4 scheduled screenings</CardDescription>
             </div>
             <Link href="/admin/showtimes">
-              <Button variant="ghost" size="sm" className="text-gold hover:text-gold-light">
+              <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-400">
                 View All
                 <ArrowRight className="h-4 w-4 ml-1" />
               </Button>
@@ -538,7 +538,7 @@ export default function AdminDashboardPage() {
               <CardDescription>Most popular movies this period</CardDescription>
             </div>
             <Link href="/admin/movies">
-              <Button variant="ghost" size="sm" className="text-gold hover:text-gold-light">
+              <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-400">
                 View All
                 <ArrowRight className="h-4 w-4 ml-1" />
               </Button>
@@ -578,7 +578,7 @@ export default function AdminDashboardPage() {
                           <div className="flex items-center gap-2">
                             <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden">
                               <div
-                                className="h-full rounded-full bg-gold transition-all"
+                                className="h-full rounded-full bg-red-500 transition-all"
                                 style={{ width: `${Math.min(sale.occupancyRate, 100)}%` }}
                               />
                             </div>
@@ -625,7 +625,7 @@ export default function AdminDashboardPage() {
             </div>
             <div className="mt-4 grid grid-cols-2 gap-4">
               <div className="rounded-lg border border-border/40 p-3 text-center">
-                <p className="text-2xl font-bold text-gold">
+                <p className="text-2xl font-bold text-red-500">
                   {formatCurrency(weeklyData.reduce((a, b) => a + b.revenue, 0))}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">Total This Week</p>

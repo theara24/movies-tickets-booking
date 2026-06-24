@@ -4,4 +4,7 @@ export declare class MovieQueryDto {
     status?: MovieStatus;
     genreId?: string;
     language?: string;
+    isFeatured?: boolean;
+    limit?: number;
+    page?: number;
 }

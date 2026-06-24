@@ -34,11 +34,17 @@ function MovieCard({ movie }: { movie: Movie }) {
     >
       <Link href={`/movies/${movie.slug}`} className="group block space-y-3">
         <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-muted">
-          <img
-            src={movie.posterUrl}
-            alt={movie.title}
-            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
+          {movie.posterUrl ? (
+            <img
+              src={movie.posterUrl}
+              alt={movie.title}
+              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-sm">
+              No Poster
+            </div>
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-cinema-dark/80 via-transparent to-transparent z-10" />
           <div className="absolute bottom-3 left-3 right-3 z-20 flex items-center justify-between">
             <Badge variant="outline" className="bg-cinema-dark/70 text-xs border-none">
@@ -106,11 +112,15 @@ function MovieBanner({ movies }: { movies: Movie[] }) {
   return (
     <section className="relative overflow-hidden rounded-2xl border border-border/40 group">
       <div className="absolute inset-0">
-        <img
-          src={movie.backdropUrl}
-          alt=""
-          className="w-full h-full object-cover"
-        />
+        {movie.backdropUrl ? (
+          <img
+            src={movie.backdropUrl}
+            alt=""
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-cinema-dark via-cinema-dark/80 to-cinema-dark" />
+        )}
         <div className="absolute inset-0 bg-gradient-to-r from-cinema-dark via-cinema-dark/70 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-t from-cinema-dark/40 to-transparent" />
       </div>
@@ -126,11 +136,17 @@ function MovieBanner({ movies }: { movies: Movie[] }) {
         >
           <div className="w-full md:w-1/3 lg:w-1/4 shrink-0">
             <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-muted shadow-2xl">
-              <img
-                src={movie.posterUrl}
-                alt={movie.title}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
+              {movie.posterUrl ? (
+                <img
+                  src={movie.posterUrl}
+                  alt={movie.title}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-sm">
+                  No Poster
+                </div>
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-cinema-dark/60 to-transparent" />
             </div>
           </div>
